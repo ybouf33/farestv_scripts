@@ -10,6 +10,10 @@ on:
         required: true
         default: '86'
 
+# Add permissions to allow GitHub Actions to push to the repository
+permissions:
+  contents: write
+
 jobs:
   run-fetch-script:
     runs-on: ubuntu-latest
