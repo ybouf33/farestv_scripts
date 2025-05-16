@@ -1,9 +1,7 @@
-name: Fetch YacineTV Channel Data
+name: Fetch Channel Data
 
 on:
-  schedule:
-    - cron: '0 2 * * *'  # Run daily at 2 AM UTC
-  workflow_dispatch:
+  workflow_dispatch:  # Allows you to trigger manually from GitHub UI or API
     inputs:
       channel_id:
         description: 'Channel ID to fetch'
@@ -11,31 +9,22 @@ on:
         default: '4'
 
 jobs:
-  fetch-channel:
+  run-fetch-script:
     runs-on: ubuntu-latest
-    
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set Up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
-          
-      - name: Install dependencies
+          python-version: '3.11'
+
+      - name: Install Requirements
         run: |
-          python -m pip install --upgrade pip
           pip install -r requirements.txt
-          
-      - name: Run channel data fetcher
+
+      - name: Run Channel Data Script
         run: |
-          CHANNEL_ID=${{ github.event_name == 'workflow_dispatch' && github.event.inputs.channel_id || '4' }}
-          python get_channel_data.py $CHANNEL_ID ytv_channel_${CHANNEL_ID}_latest.json
-        
-      - name: Upload results
-        uses: actions/upload-artifact@v3
-        with:
-          name: ytv-channel-data
-          path: ytv_channel_*_latest.json
-          retention-days: 7 
+          python get_channel_data.py ${{ github.event.inputs.channel_id }} 
