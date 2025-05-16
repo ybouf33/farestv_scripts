@@ -1,0 +1,42 @@
+name: API - Fetch Categories
+
+on:
+  repository_dispatch:
+    types: [fetch-categories]
+  workflow_dispatch:
+
+jobs:
+  run-fetch-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Requirements
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run Categories Data Script
+        run: |
+          python get_categories.py api_output/categories.json
+
+      - name: Setup Pages Directory
+        run: |
+          mkdir -p api_output
+          touch api_output/index.html
+          echo '<!DOCTYPE html><html><head><title>API Results</title><meta http-equiv="refresh" content="0;url=categories.json"></head><body><p>Redirecting to results...</p></body></html>' > api_output/index.html
+          echo "Last updated: $(date)" > api_output/timestamp.txt
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./api_output
+          destination_dir: api/categories
+          keep_files: false 

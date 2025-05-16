@@ -1,0 +1,56 @@
+name: API - Fetch Category Channels
+
+on:
+  repository_dispatch:
+    types: [fetch-category-channels]
+  workflow_dispatch:
+    inputs:
+      category_id:
+        description: 'Category ID to fetch channels for'
+        required: true
+        default: '86'
+
+jobs:
+  run-fetch-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Requirements
+        run: |
+          pip install -r requirements.txt
+
+      - name: Extract Category ID
+        run: |
+          if [ "${{ github.event_name }}" == "repository_dispatch" ]; then
+            CATEGORY_ID=${{ github.event.client_payload.category_id || '86' }}
+          else
+            CATEGORY_ID=${{ github.event.inputs.category_id }}
+          fi
+          echo "CATEGORY_ID=$CATEGORY_ID" >> $GITHUB_ENV
+
+      - name: Run Category Channels Script
+        run: |
+          mkdir -p api_output
+          python get_channels_by_category.py ${{ env.CATEGORY_ID }} api_output/channels.json
+
+      - name: Setup Pages Directory
+        run: |
+          echo '<!DOCTYPE html><html><head><title>API Results</title><meta http-equiv="refresh" content="0;url=channels.json"></head><body><p>Redirecting to results...</p></body></html>' > api_output/index.html
+          echo "Last updated: $(date)" > api_output/timestamp.txt
+          echo "Category ID: ${{ env.CATEGORY_ID }}" > api_output/info.txt
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./api_output
+          destination_dir: api/category/${{ env.CATEGORY_ID }}
+          keep_files: true 

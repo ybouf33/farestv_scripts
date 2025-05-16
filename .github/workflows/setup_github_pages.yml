@@ -1,0 +1,87 @@
+name: Setup GitHub Pages
+
+on:
+  workflow_dispatch:
+
+jobs:
+  setup-pages:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Create Initial Pages Structure
+        run: |
+          mkdir -p api_output
+          
+          # Create main index page
+          cat > api_output/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>FaresTV API</title>
+            <style>
+              body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+              h1 { color: #333; }
+              .endpoint { background: #f5f5f5; padding: 15px; margin: 15px 0; border-radius: 5px; }
+              .method { font-weight: bold; color: #0066cc; }
+              code { background: #eee; padding: 2px 5px; border-radius: 3px; }
+            </style>
+          </head>
+          <body>
+            <h1>FaresTV API Documentation</h1>
+            
+            <p>This API provides access to YacineTV data through the following endpoints:</p>
+            
+            <div class="endpoint">
+              <p class="method">GET /api/categories</p>
+              <p>Returns all available categories.</p>
+              <p>Example: <code>https://[username].github.io/[repo-name]/api/categories/</code></p>
+            </div>
+            
+            <div class="endpoint">
+              <p class="method">GET /api/channel/[id]</p>
+              <p>Returns data for a specific channel.</p>
+              <p>Example: <code>https://[username].github.io/[repo-name]/api/channel/4/</code></p>
+            </div>
+            
+            <div class="endpoint">
+              <p class="method">GET /api/category/[id]</p>
+              <p>Returns all channels for a specific category.</p>
+              <p>Example: <code>https://[username].github.io/[repo-name]/api/category/86/</code></p>
+            </div>
+            
+            <h2>How to Trigger Updates</h2>
+            <p>To update the data, you can use the GitHub REST API to trigger a repository_dispatch event:</p>
+            <pre><code>curl -X POST \
+  https://api.github.com/repos/[username]/[repo-name]/dispatches \
+  -H "Accept: application/vnd.github.v3+json" \
+  -H "Authorization: token YOUR_GITHUB_TOKEN" \
+  -d '{"event_type": "fetch-categories"}'</code></pre>
+
+            <p>For channel data with parameters:</p>
+            <pre><code>curl -X POST \
+  https://api.github.com/repos/[username]/[repo-name]/dispatches \
+  -H "Accept: application/vnd.github.v3+json" \
+  -H "Authorization: token YOUR_GITHUB_TOKEN" \
+  -d '{"event_type": "fetch-channel", "client_payload": {"channel_id": "4"}}'</code></pre>
+
+            <p>For category channels with parameters:</p>
+            <pre><code>curl -X POST \
+  https://api.github.com/repos/[username]/[repo-name]/dispatches \
+  -H "Accept: application/vnd.github.v3+json" \
+  -H "Authorization: token YOUR_GITHUB_TOKEN" \
+  -d '{"event_type": "fetch-category-channels", "client_payload": {"category_id": "86"}}'</code></pre>
+          </body>
+          </html>
+          EOF
+          
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./api_output
+          keep_files: true 

@@ -76,3 +76,67 @@ This project includes several GitHub Actions workflows for automated data fetchi
 3. Click "Run workflow"
 4. Optionally configure input parameters
 5. Click "Run workflow" to start the execution 
+
+## API Access via GitHub Pages
+
+This project provides API-like access to YacineTV data through GitHub Pages. After setting up, you can access the data via the following URLs:
+
+### Endpoints
+
+1. **Categories**
+   - URL: `https://[username].github.io/[repo-name]/api/categories/`
+   - Returns all available categories
+
+2. **Channel Data**
+   - URL: `https://[username].github.io/[repo-name]/api/channel/[channel_id]/`
+   - Returns data for a specific channel
+   - Example: `https://[username].github.io/[repo-name]/api/channel/4/`
+
+3. **Category Channels**
+   - URL: `https://[username].github.io/[repo-name]/api/category/[category_id]/`
+   - Returns all channels in a specific category
+   - Example: `https://[username].github.io/[repo-name]/api/category/86/`
+
+### Setup Instructions
+
+1. Enable GitHub Pages in your repository settings:
+   - Go to Settings > Pages
+   - Set Source to "GitHub Actions"
+
+2. Run the "Setup GitHub Pages" workflow:
+   - Go to Actions tab
+   - Select "Setup GitHub Pages"
+   - Click "Run workflow"
+
+3. To update data, trigger the appropriate workflow:
+   - Through the GitHub UI (Actions tab)
+   - Via the GitHub API (see below)
+
+### Triggering Updates via API
+
+You can trigger data updates using the GitHub repository_dispatch API:
+
+```bash
+# Update categories
+curl -X POST \
+  https://api.github.com/repos/[username]/[repo-name]/dispatches \
+  -H "Accept: application/vnd.github.v3+json" \
+  -H "Authorization: token YOUR_GITHUB_TOKEN" \
+  -d '{"event_type": "fetch-categories"}'
+
+# Update channel data (with channel_id parameter)
+curl -X POST \
+  https://api.github.com/repos/[username]/[repo-name]/dispatches \
+  -H "Accept: application/vnd.github.v3+json" \
+  -H "Authorization: token YOUR_GITHUB_TOKEN" \
+  -d '{"event_type": "fetch-channel", "client_payload": {"channel_id": "4"}}'
+
+# Update category channels (with category_id parameter)
+curl -X POST \
+  https://api.github.com/repos/[username]/[repo-name]/dispatches \
+  -H "Accept: application/vnd.github.v3+json" \
+  -H "Authorization: token YOUR_GITHUB_TOKEN" \
+  -d '{"event_type": "fetch-category-channels", "client_payload": {"category_id": "86"}}'
+```
+
+To create a personal access token, go to GitHub Settings > Developer settings > Personal access tokens. 

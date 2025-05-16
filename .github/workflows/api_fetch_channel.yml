@@ -1,0 +1,56 @@
+name: API - Fetch Channel
+
+on:
+  repository_dispatch:
+    types: [fetch-channel]
+  workflow_dispatch:
+    inputs:
+      channel_id:
+        description: 'Channel ID to fetch'
+        required: true
+        default: '4'
+
+jobs:
+  run-fetch-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Requirements
+        run: |
+          pip install -r requirements.txt
+
+      - name: Extract Channel ID
+        run: |
+          if [ "${{ github.event_name }}" == "repository_dispatch" ]; then
+            CHANNEL_ID=${{ github.event.client_payload.channel_id || '4' }}
+          else
+            CHANNEL_ID=${{ github.event.inputs.channel_id }}
+          fi
+          echo "CHANNEL_ID=$CHANNEL_ID" >> $GITHUB_ENV
+
+      - name: Run Channel Data Script
+        run: |
+          mkdir -p api_output
+          python get_channel_data.py ${{ env.CHANNEL_ID }} api_output/channel.json
+
+      - name: Setup Pages Directory
+        run: |
+          echo '<!DOCTYPE html><html><head><title>API Results</title><meta http-equiv="refresh" content="0;url=channel.json"></head><body><p>Redirecting to results...</p></body></html>' > api_output/index.html
+          echo "Last updated: $(date)" > api_output/timestamp.txt
+          echo "Channel ID: ${{ env.CHANNEL_ID }}" > api_output/info.txt
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./api_output
+          destination_dir: api/channel/${{ env.CHANNEL_ID }}
+          keep_files: true 
