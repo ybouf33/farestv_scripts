@@ -27,8 +27,8 @@ jobs:
         run: python get_categories.py ytv_categories_latest.json
         
       - name: Upload results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3.1.2  # Specify exact version
         with:
           name: ytv-categories
           path: ytv_categories_latest.json
-          retention-days: 7 
+          retention-days: 7
