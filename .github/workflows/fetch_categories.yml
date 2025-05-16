@@ -26,8 +26,11 @@ jobs:
       - name: Run categories fetcher
         run: python get_categories.py ytv_categories_latest.json
         
+      - name: Debug file existence
+        run: ls -l ytv_categories_latest.json
+
       - name: Upload results
-        uses: actions/upload-artifact@v3.1.2  # Specify exact version
+        uses: actions/upload-artifact@v3
         with:
           name: ytv-categories
           path: ytv_categories_latest.json
